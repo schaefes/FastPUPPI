@@ -11,7 +11,17 @@ if [[ "$1" == "-j" ]]; then N=$2; shift; shift; fi;
 
 OPTS=""
 
-if [[ "$1" == "--131X_v9a" ]]; then
+# /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_151Xv0/250910_165617/0000
+# /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/GluGluHToTauTau_M-125_TuneCP5_14TeV-powheg-pythia8_PU200/GluGluHToTauTau_PU200_151Xv0/250915_092033/0000
+# /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/GluGluToHHTo4B_node_SM_TuneCP5_14TeV-amcatnlo-pythia8/GluGluHHTo4B_PU200_151Xv0/250915_092102/0000
+# /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/QCD_Pt-15To3000_TuneCP5_Flat_14TeV-pythia8/QCD_Pt15To3000_PU200_151Xv0/250919_143646/0000
+# /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_151Xv0/250910_165631/0000
+
+if [[ "$1" == "--151X_v1" ]]; then
+    shift;
+    MAIN=/eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_151Xv0/250910_165617/0000
+    PREFIX="inputs151X_23"
+elif [[ "$1" == "--131X_v9a" ]]; then
     shift;
     MAIN=/eos/cms/store/cmst3/group/l1tr/FastPUPPI/14_0_X/fpinputs_131X/v9a/$1
     PREFIX="inputs131X_"
@@ -38,14 +48,14 @@ elif [[ "$1" == "--110X_v3" ]]; then
     OPTS="${OPTS} --replace Phase2C17I13M9=Phase2C9 "
     OPTS="${OPTS} --replace GeometryExtended2026D88=GeometryExtended2026D49 "
     OPTS="${OPTS} --replace 125X_mcRun4_realistic_v2=123X_mcRun4_realistic_v3 "
-else 
+else
     echo "You mush specify the version of the input samples to run on "
     echo "   --125X_v0 : 125X Phase2Fall22 MC in 12_5_X"
     echo "   --110X_v3 : 110X HLT MC inputs remade in 12_3_0_pre4; add --inline-customize 'oldInputs_12_3_X()'"
     echo "   --110X_v2 : 110X HLT MC inputs remade in 11_1_6;      add --inline-customize 'oldInputs_11_1_6()'"
     exit 1;
 fi;
- 
+
 if [[ "$L1TPF_LOCAL_INPUT_DIR" != "" ]] && test -d $L1TPF_LOCAL_INPUT_DIR; then
     L1TPF_LOCAL_MAIN=$L1TPF_LOCAL_INPUT_DIR/$(basename $(dirname $MAIN))/$(basename $MAIN)
     if test -d $L1TPF_LOCAL_MAIN; then
@@ -68,8 +78,12 @@ if [[ "$1" == "--noclean" ]]; then
     shift
 fi
 
+# Ensure output folder exists
+OUTDIR="FP_output/${OUTPUT}"
+mkdir -p "$OUTDIR"
+
 PSCRIPT=$CMSSW_BASE/src/FastPUPPI/NtupleProducer/python/scripts/
-$PSCRIPT/cmsSplit.pl --files "$MAIN/${PREFIX}*root" --label ${OUTPUT} ${CODE}.py --bash --n $N --rrb $OPTS  $* && bash ${CODE}_${OUTPUT}_local.sh 
+$PSCRIPT/cmsSplit.pl --files "$MAIN/${PREFIX}*root" --label ${OUTPUT} ${CODE}.py --bash --n $N --outdir "$OUTDIR" --rrb $OPTS  $* && bash ${CODE}_${OUTPUT}_local.sh --nomerge
 
 if $clean; then
     REPORT=$(grep -o "tee \S\+_${OUTPUT}.report.txt" ${CODE}_${OUTPUT}_local.sh  | awk '{print $2}');

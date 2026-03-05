@@ -19,6 +19,7 @@
 #include "CommonTools/Utils/interface/StringObjectFunction.h"
 
 #include <algorithm>
+#include <codecvt>
 
 class L1PFJetTableProducer : public edm::global::EDProducer<>  {
     public:
@@ -43,9 +44,9 @@ class L1PFJetTableProducer : public edm::global::EDProducer<>  {
                 std::string coll;
                 edm::EDGetTokenT<reco::CandidateView> src;
                 StringCutObjectSelector<reco::Candidate> sel;
-                
+
                 JetRecord(const std::string & name, const edm::EDGetTokenT<reco::CandidateView> & tag, const edm::ParameterSet & pset) :
-                    coll(name), src(tag), 
+                    coll(name), src(tag),
                     sel(pset.existsAs<std::string>(name+"_sel") ? pset.getParameter<std::string>(name+"_sel") : "", true) {}
         };
         std::vector<JetRecord> jets_;
@@ -123,16 +124,16 @@ L1PFJetTableProducer::produce(edm::StreamID id, edm::Event& iEvent, const edm::E
                 }
             }
         }
-        
+
         // create the table
         unsigned int njets = selected.size();
         auto out = std::make_unique<nanoaod::FlatTable>(njets, jets.coll+"Jets", false);
 
         // fill basic info
-        vals_pt.resize(njets); 
-        vals_eta.resize(njets); 
-        vals_phi.resize(njets); 
-        vals_mass.resize(njets); 
+        vals_pt.resize(njets);
+        vals_eta.resize(njets);
+        vals_phi.resize(njets);
+        vals_mass.resize(njets);
         for (unsigned int i = 0; i < njets; ++i) {
             vals_pt[i] = selected[i]->pt();
             vals_eta[i] = selected[i]->eta();
@@ -149,7 +150,9 @@ L1PFJetTableProducer::produce(edm::StreamID id, edm::Event& iEvent, const edm::E
             for (unsigned int i = 0; i < njets; ++i) {
                 if (matched[i] != nullptr) {
                     vals_pt[i] = matched[i]->pt();
-                    vals_eta[i] = deltaR(*selected[i], *matched[i]);;
+                    vals_eta[i] = matched[i]->eta();
+                    vals_phi[i] = matched[i]->phi();
+                    vals_eta[i] = deltaR(*selected[i], *matched[i]);
                 } else {
                     vals_pt[i] = 0;
                     vals_eta[i] = 99.9;
@@ -157,7 +160,10 @@ L1PFJetTableProducer::produce(edm::StreamID id, edm::Event& iEvent, const edm::E
             }
             out->addColumn<float>("genpt", vals_pt, "pt of matched gen jet");
             out->addColumn<float>("gendr", vals_eta, "dr of matched gen jet");
+            out->addColumn<float>("geneta", vals_eta, "eta of matched gen jet");
+            out->addColumn<float>("genphi", vals_phi, "phi of matched gen jet");
         }
+        // end gen match
 
         // fill extra vars
         for (const auto & evar : extraVars_) {
@@ -166,7 +172,7 @@ L1PFJetTableProducer::produce(edm::StreamID id, edm::Event& iEvent, const edm::E
             }
             out->addColumn<float>(evar.name, vals_pt, evar.expr);
         }
-        
+
         // save to the event branches
         iEvent.put(std::move(out), jets.coll+"Jets");
 
@@ -175,6 +181,7 @@ L1PFJetTableProducer::produce(edm::StreamID id, edm::Event& iEvent, const edm::E
         matched.clear();
     }
 }
+
 
 //define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"

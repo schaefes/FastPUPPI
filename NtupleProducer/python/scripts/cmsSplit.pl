@@ -7,7 +7,7 @@ use Data::Dumper;
 use File::Basename;
 use Cwd;
 
-my $verbose = 1; my $label = ''; 
+my $verbose = 1; my $label = '';
 my ($dataset,$dbsql,$filelist,$filedir,$castor,$filesperjob,$jobs,$pretend,$args,$evjob,$triangular,$rrb,$customize,$inlinecustomize,$maxfiles,$maxevents,$skipfiles,$json,$fnal,$AAA,$addparents,$randomize);
 my ($bash,$lsf,$help,$byrun,$bysize,$nomerge,$evperfilejob,$evperfile,$eosoutdir,$outdir);
 my $monitor="/afs/cern.ch/user/g/gpetrucc/pl/cmsTop.pl";#"wc -l";
@@ -67,10 +67,10 @@ GetOptions(
 sub usage() {
 print <<EOF
 
-usage: 
+usage:
   $0 cfg.py split_options [ input ] [ options ] [ cfg.py_args]
 
-it will create cmssw jobs   
+it will create cmssw jobs
   - cfg_job<N>.py     for all the N jobs, each producing outputs renamed as "X.root" => "X_job<N>.root"
   - cfg_merge_<X>.py  for all enabled output modules X define in the cfg.py,
                       it merges the output "X_job<N>.root" back into "X.root"
@@ -85,23 +85,23 @@ split_options:
        --files-per-job: specify the number of files per job (number of jobs is computed automatically)
                         shortcut: --fj
   * split per events: use *both* these options
-       --jobs:          specify the number of jobs 
+       --jobs:          specify the number of jobs
                         shortcut: -n
        --events-per-job: specify the number of events per job
                         shortcut: --ej
       note: this will not work if you use other PoolSource parameters like 'lumisToProcess' or 'eventsToProcess'
       note 2: it won't change the random seeds unless you add the --randomize option
-  * split per events from files: 
+  * split per events from files:
        --events-per-file-job: specify the number of events per job
                         shortcut: --efj
       note: this will be very slow, as it will have to query the number of events in each file to edmFileUtil or DAS
-      note 2: some jobs will process less than this number of events 
+      note 2: some jobs will process less than this number of events
 
 input:
   default:    takes as input the files from the cfg.py
   --dbsql:    executes DBS query, and takes as input the filenames in the output
   --dataset:  takes as input the files in the given dataset and available at cern
-  --filelist: takes as input the root files contained in this file. 
+  --filelist: takes as input the root files contained in this file.
               it works also if the file contains more columns than the file names (but no more than one filename per line)
               it does not work if the file contains duplicates (not yet, at least)
   --files:    takes as input the contents of a local directory, plus an optional glob for the file
@@ -115,10 +115,10 @@ options:
   --bash:    creates also a bash script cfg_local.sh that spawns the <N> jobs locally, waits for them and then merges the outputs.
   --lsf:     creates also a bash script that will submit jobs to the specified LSF queue.
              warning: this uses my private cmsRun LSF wrapper, it might not work for you.
-  --args:    handle cfg.py files that take command line arguments 
+  --args:    handle cfg.py files that take command line arguments
   --label:   rename all intermediate and output files, inserting an extra "_<label>" before "_job<N>", "_local" & so on...
    --triangular: instead of making jobs of uniform size, scale them linearly from zero to twice the average size
-                 it will give you longer latency for some jobs, but also a fast feedback on the first ones  
+                 it will give you longer latency for some jobs, but also a fast feedback on the first ones
   --monitor-script: to be used with "--bash", changes the command used to monitor logfiles (default is "wc -l")
   --report-script:  to be used with "--bash", changes the command used to make a final report of logfiles (default is "grep 'Events total'")
   --customize: append specified python fragment to the cfg
@@ -157,14 +157,14 @@ if ($subprocesses == 1) {
 }
 
 #===============================================================
-# query inputs from python file 
+# query inputs from python file
 use File::Temp qw/ :POSIX /;
 my $py_out_file = tmpnam();
 my $queryPythonFile = <<EOF;
 cmsSplit_output_file = open("$py_out_file","w")
 
 ## INPUT
-for x in process.source.fileNames: 
+for x in process.source.fileNames:
     cmsSplit_output_file.write("IN\\t\%s\\t-\\n" % x)
 
 ## OUTPUT
@@ -176,7 +176,7 @@ class EPVisitor:
             cmsSplit_output_file.write("OUT\\t\%s\\t\%s\\t\%s\\n" % (visitee.label_(), visitee.fileName.value(), visitee.type_()));
         if ("Dump" in visitee.label_()) and (type(visitee) == cms.EDAnalyzer) and hasattr(visitee, "outName"):
             cmsSplit_output_file.write("OUT\\t\%s\\t\%s\\t\%s\\n" % (visitee.label_(), visitee.outName.value(), "Dump"));
-    def leave(self,visitee): 
+    def leave(self,visitee):
         pass
 
 epv = EPVisitor()
@@ -190,7 +190,7 @@ else:
        ep.visit(epv)
 
 ## TFileService
-if hasattr(process,"TFileService") and type($THEPROCESS.TFileService) == cms.Service: 
+if hasattr(process,"TFileService") and type($THEPROCESS.TFileService) == cms.Service:
     cmsSplit_output_file.write("TFS\t"+$THEPROCESS.TFileService.fileName.value()+"\\tX\\tX\\n")
 
 cmsSplit_output_file.close()
@@ -233,8 +233,8 @@ if (defined($dbsql)) {
         my $stdir  = dirname($filedir);
         my $stglob = basename($filedir);
         if ($stglob =~ /.*(\*|\?).*|.*\.root/) {
-            $stglob =~ s/\./\\./; # convert a 
-            $stglob =~ s/\?/./;   # regex to 
+            $stglob =~ s/\./\\./; # convert a
+            $stglob =~ s/\?/./;   # regex to
             $stglob =~ s/\*/.*/;  # a glob.
         } else {
             $stdir = $filedir;
@@ -254,9 +254,9 @@ if (defined($dbsql)) {
     }
 } else {
     print "Using files in existing cfg file\n" if $verbose;
-    foreach (@pythonFileInfo) { 
-        my ($what,$arg,$arg2) = split(/\s+/,$_); 
-        if ($what eq "IN") { push @files, $arg; } 
+    foreach (@pythonFileInfo) {
+        my ($what,$arg,$arg2) = split(/\s+/,$_);
+        if ($what eq "IN") { push @files, $arg; }
     }
 }
 chomp @files;
@@ -334,9 +334,9 @@ foreach (@pythonFileInfo) {
 #===============================================================
 # TFileService
 my $tfsFile;
-foreach (@pythonFileInfo) { 
-    my ($what,$arg,$arg2,$arg3) = split(/\s+/,$_); 
-    if ($what eq "TFS") { 
+foreach (@pythonFileInfo) {
+    my ($what,$arg,$arg2,$arg3) = split(/\s+/,$_);
+    if ($what eq "TFS") {
         $tfsFile = $arg;
         print "Must handle TFileService producing $tfsFile\n" if $verbose > 0;
     }
@@ -394,7 +394,7 @@ sub split_triang {
         my @this = ();
         my $limit = ceil($i*($i+1)/2 * $scale);
         do {
-            push @this, shift(@x); 
+            push @this, shift(@x);
             $got++;
         } while ($got < $limit);
         push @ret, [@this];
@@ -405,9 +405,9 @@ sub split_triang {
 
 open SRC, $filename; my $src = join('',<SRC>); close SRC;
 if ($customize) {
-    $src .= "###\n### Begin customize using $customize\n###\n"; 
+    $src .= "###\n### Begin customize using $customize\n###\n";
     open CUST, $customize; $src .= join('',<CUST>); close CUST;
-    $src .= "###\n### END customize using $customize\n###\n"; 
+    $src .= "###\n### END customize using $customize\n###\n";
 }
 
 my $splits;
@@ -415,7 +415,7 @@ if ($byrun) {
     my @allfiles = @files;
     my %run2file = ();
     foreach my $f (@allfiles) {
-        my @runs; 
+        my @runs;
         if ($f =~ m{/store/data/[^/]+/[^/]+/[^/]+/v\d+/000/(\d\d\d)/(\d\d\d)/[0-9A-F]+/[0-9A-F\-]+.root}) {
             push @runs, "$1$2";
         } else {
@@ -480,7 +480,7 @@ if ($byrun) {
             die "Not supported yet\n";
         }
     }
-    my $tot = 0; 
+    my $tot = 0;
     foreach my $f (@files) {
         die "Could not find size for file $f " unless $file2size{$f};
         $tot += $file2size{$f};
@@ -501,7 +501,7 @@ if ($byrun) {
             }
         }
         push @alljobs, [ @jobfiles ];
-        printf ("Job %d, %d files, %.3f Mb\n", scalar(@alljobs), scalar(@jobfiles), $subtot/1024.0/1024.0); 
+        printf ("Job %d, %d files, %.3f Mb\n", scalar(@alljobs), scalar(@jobfiles), $subtot/1024.0/1024.0);
     }
     #print Dumper(\@alljobs);
     $splits = \@alljobs;
@@ -534,15 +534,15 @@ if ($byrun) {
                 $subtot += $file2events{$f};
             }
         }
-        printf ("Step 0: job %d, %d files, %d events\n", scalar(@alljobs), scalar(@jobfiles), $subtot); 
+        printf ("Step 0: job %d, %d files, %d events\n", scalar(@alljobs), scalar(@jobfiles), $subtot);
         if ($subtot < 1.5 * $evperfilejob) {
-            printf ("Step 1: job %d, %d files, %d events\n", scalar(@alljobs), scalar(@jobfiles), $subtot); 
+            printf ("Step 1: job %d, %d files, %d events\n", scalar(@alljobs), scalar(@jobfiles), $subtot);
             push @alljobs, [ @jobfiles ];
             push @job2evts, [ 0, -1 ];
         } else {
-            my $estart = 0;    
+            my $estart = 0;
             while ($estart < $subtot) {
-                printf ("Step 1: job %d, %d files, max %d events, skip %d\n", scalar(@alljobs), scalar(@jobfiles), $evperfilejob, $estart); 
+                printf ("Step 1: job %d, %d files, max %d events, skip %d\n", scalar(@alljobs), scalar(@jobfiles), $evperfilejob, $estart);
                 push @alljobs, [ @jobfiles ];
                 push @job2evts, [ $estart, $evperfilejob ];
                 $estart += $evperfilejob;
@@ -552,9 +552,9 @@ if ($byrun) {
     $splits = \@alljobs;
     $jobs = scalar(@alljobs);
 } elsif ($triangular) {
-    $splits = split_triang(); 
+    $splits = split_triang();
 } elsif ($rrb) {
-    $splits = split_rrb(); 
+    $splits = split_rrb();
 } elsif ($evjob) {  # in this case, put all files in all jobs
     $splits = [ map [@files], ( 1 .. $jobs ) ];
 } else {
@@ -648,7 +648,7 @@ foreach my $j (1 .. $jobs) {
         }
     }
     if ($tfsFile) {
-        my $f = $tfsFile; 
+        my $f = $tfsFile;
         $f =~ s/\.root$/$label ."_job$j.root"/e;
         if ($jobs == 1) { $f =~ s/_job1//; }
         if (defined($outdir)) { $f = $outdir . "/" . basename($f); }
@@ -717,7 +717,7 @@ process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 process.source.fileNames = [\n$in\n]
 
 process.out = cms.OutputModule("PoolOutputModule",fileName = cms.untracked.string('$out'))
-process.end = cms.EndPath(process.out)   
+process.end = cms.EndPath(process.out)
 EOF
     close OUT;
 }
@@ -799,7 +799,7 @@ if (scalar(@outs) == 1) {
 if (($bash or $lsf) and not ($pretend)) {
     my $pyfile = $basename . $label . "_report.sh";
     print "Will create reort script $pyfile\n" if $verbose;
-
+    $reportfile = "/eos/iuser/s/stella/FP_output/logs/" . $basename . $label . "_report.txt";
     print STDERR "Report file will be called $reportfile\n";
 
     my $jlglob = $basename . $label . "_job[0-9]*.log*";
@@ -908,7 +908,7 @@ if ($lsf and not($pretend)) {
         $args .= "  $eosoutdir";
 print OUT <<EOF;
 Universe = vanilla
-Executable = $runner 
+Executable = $runner
 use_x509userproxy = \$ENV(X509_USER_PROXY)
 
 Log        = ${basename}${label}_\$(Job).condor

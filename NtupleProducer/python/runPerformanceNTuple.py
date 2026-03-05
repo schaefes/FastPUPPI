@@ -17,8 +17,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('file:inputs125X.root'),
-    fileNames = cms.untracked.vstring('file:/eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v0/GluGluHHTo2B2Tau_PU200/inputs140X_1-1.root'),
-    inputCommands = cms.untracked.vstring("keep *", 
+    fileNames = cms.untracked.vstring('file:inputs151X.root'),
+    inputCommands = cms.untracked.vstring("keep *",
             "drop l1tPFClusters_*_*_*",
             "drop l1tPFTracks_*_*_*",
             "drop l1tPFCandidates_*_*_*",
@@ -127,7 +127,7 @@ def monitorPerf(label, tag, makeResp=True, makeRespSplit=True, makeJets=True, ma
         for O in ["", "Charged", "Neutral", "Electron", "Muon", "ChargedHadron", "NeutralHadron", "Photon"]:
             for X in ("tot","max"):
                 process.ntuple.copyUInts.append( "%s:%sN%s%s" % (D,X,P,O))
-            process.ntuple.copyVecUInts.append( "%s:vecN%s%s" % (D,P,O))    
+            process.ntuple.copyVecUInts.append( "%s:vecN%s%s" % (D,P,O))
 
 process.ntuple = cms.EDAnalyzer("ResponseNTuplizer",
     genJets = cms.InputTag("ak4GenJetsNoNu"),
@@ -173,7 +173,7 @@ process.l1pfjetTaggerTable = cms.EDProducer("L1PFJetTableProducer",
 )
 
 process.l1pfmetTable = cms.EDProducer("L1PFMetTableProducer",
-    genMet = cms.InputTag("genMetTrue"), 
+    genMet = cms.InputTag("genMetTrue"),
     flavour = cms.string(""),
     mets = cms.PSet(
     ),
@@ -189,7 +189,7 @@ monitorPerf("L1Puppi", "l1tLayer1:Puppi")
 #process.content = cms.EDAnalyzer("EventContentAnalyzer")
 process.p = cms.Path(
         process.ntuple + #process.content +
-        process.l1pfjetTable + 
+        process.l1pfjetTable +
         process.l1pfjetTaggerTable +
         process.l1pfmetTable + process.l1pfmetCentralTable
         )
@@ -247,7 +247,7 @@ def addMult():
         monitorPerf("L1%sPuppi"%D, "l1tLayer1%s:Puppi"%D,  makeResp=False, makeRespSplit=False, makeJets=False, makeMET=False, makeCentralMET=False, makeOutputMultiplicities="CTL1")
 
 def addCTL2Met():
-    process.l1pfmetTable.mets.ctl2MET = cms.InputTag("l1tMETPFProducer","") 
+    process.l1pfmetTable.mets.ctl2MET = cms.InputTag("l1tMETPFProducer","")
 
 def addCHS():
     process.l1PuppiCharged = cms.EDFilter("L1TPFCandSelector",
@@ -305,14 +305,14 @@ def addCalib():
 def addNNPuppiTaus():
     process.extraPFStuff.add(process.l1tNNTauProducerPuppi)
     process.l1pfjetTable.jets.nnPuppiTau = cms.InputTag('l1tNNTauProducerPuppi', "L1PFTausNN")
-    
+
 
 def addMultitagging(): #extended TRK
     classes = process.l1tSC4NGJetProducer.classes
-    #process.l1tSC4NGJetProducer.l1tSC4NGJetModelPath = cms.string(os.environ['CMSSW_BASE']+"/src/L1TSC4NGJetModel/L1TSC4NGJetModel_v0")
-    for i in range(8): 
+    process.l1tSC4NGJetProducer.l1tSC4NGJetModelPath = cms.string(os.environ['CMSSW_BASE']+"/src/L1TSC4NGJetModel/L1TSC4NGJetModel_pT")
+    for i in range(9):
         setattr(process.l1pfjetTaggerTable.moreVariables, "tagScore_%s" % (classes[i]), cms.string("getTagScores()[%s]"  % (i)))
-        
+
     process.l1tSC4NGJetProducer.doJEC = cms.bool(True)
     process.l1tSC4NGJetProducer.correctorFile = cms.string("L1Trigger/Phase2L1ParticleFlow/data/jecs/jecs_20220308.root")
     process.l1tSC4NGJetProducer.correctorDir = cms.string("L1PuppiSC4EmuJets")
@@ -323,6 +323,7 @@ def addSeededConeJets():
     process.l1pfjetTable.jets.scPuppiSim = cms.InputTag('l1tSC4PFL1Puppi')
     process.l1pfjetTable.jets.scPuppi = cms.InputTag('l1tSC4PFL1PuppiEmulator')
     process.l1pfjetTable.jets.scPuppiCorr = cms.InputTag('l1tSC4PFL1PuppiCorrectedEmulator')
+    process.l1pfjetTable.jets.scPuppiExtended = cms.InputTag('l1tSC4PFL1PuppiExtendedEmulator')
     process.l1pfmetTable.mets.scPuppiCorrMHT = cms.InputTag("l1tSC4PFL1PuppiCorrectedEmulatorMHT")
 
 def addPhase1Jets():
@@ -372,13 +373,15 @@ def addGenJetFlavourTable():
     process.p += process.selectedHadronsAndPartons
     process.p += process.genFlavourInfo
     process.p += process.genJetFlavourTable
+    print('collection:', process.l1pfjetTable.jets.Gen)
+
 
 def addTkPtCut(ptCut):
     process.l1tLayer1BarrelTkPt3 = process.l1tLayer1Barrel.clone(trkPtCut = ptCut)
     process.l1tLayer1HGCalTkPt3 = process.l1tLayer1HGCal.clone(trkPtCut = ptCut)
     process.l1tLayer1TkPt3 = cms.EDProducer("L1TPFCandMultiMerger",
         pfProducers = cms.VInputTag(
-            cms.InputTag("l1tLayer1BarrelTkPt3"), 
+            cms.InputTag("l1tLayer1BarrelTkPt3"),
             cms.InputTag("l1tLayer1HGCalTkPt3"),
             cms.InputTag("l1tLayer1HGCalNoTK"),
             cms.InputTag("l1tLayer1HF")
@@ -591,7 +594,7 @@ def addPFLep(pdgs=[11,13,22],opts=["PF","Puppi"], postfix=""):
                 setattr(process, w+"Ph"+postfix+"Table", phTable)
                 process.extraPFStuff.add(phTable)
 
-def addStaEG(postfix=""):        
+def addStaEG(postfix=""):
     def getStaEgTables(slice, postfix, inputtag):
         staEgTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
                         name = cms.string("EGSta"+slice+postfix),
@@ -618,7 +621,7 @@ def addStaEG(postfix=""):
     process.extraPFStuff.add(staEgEEEmuTable)
 
 
-def addTkEG(doL1=False, doL2=True, postfix=""):        
+def addTkEG(doL1=False, doL2=True, postfix=""):
     def getTkEgTables(slice, postfix, tkem_inputtag, tkele_inputtag):
         tkEmTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
                         name = cms.string("TkEm"+slice+postfix),
@@ -654,22 +657,22 @@ def addTkEG(doL1=False, doL2=True, postfix=""):
         tkEleTable.variables.caloPhi = LazyVar("egCaloPtr.phi", float,precision=8)
 
         return tkEmTable, tkEleTable
-                                   
-    if doL1:    
+
+    if doL1:
         for w in "EB","EE":
             tkEmTable, tkEleTable = getTkEgTables(w, postfix, f"l1tLayer1EG{postfix}:L1TkEm{w}", f'l1tLayer1EG{postfix}:L1TkEle{w}')
             setattr(process, "TkEm%s%sTable" % (w,postfix), tkEmTable)
             setattr(process, "TkEle%s%sTable" % (w,postfix), tkEleTable)
             process.extraPFStuff.add(tkEmTable,tkEleTable)
 
-    if doL2:    
+    if doL2:
         tkEmTable, tkEleTable = getTkEgTables('L2', postfix, f"l1tLayer2EG:L1CtTkEm", f'l1tLayer2EG:L1CtTkElectron')
         setattr(process, "TkEmL2%sTable" % (postfix), tkEmTable)
         setattr(process, "TkEleL2%sTable" % (postfix), tkEleTable)
         process.extraPFStuff.add(tkEmTable,tkEleTable)
 
 
-def addDecodedTk(regs=['HGCal','Barrel']):        
+def addDecodedTk(regs=['HGCal','Barrel']):
     for reg in regs:
         decTkTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
                         name = cms.string("DecTk"+reg),
@@ -729,7 +732,7 @@ def addEGCrystalClusters() -> None:
                                         )
             )
         return CrystalClustersTable
-    
+
     nameSrcDictList=[
         {"name":"CaloEGammaCrystalClustersRCT", "src":"l1tPhase2L1CaloEGammaEmulator:RCTClusters"},
         {"name":"CaloEGammaCrystalClustersGCT", "src":"l1tPhase2L1CaloEGammaEmulator:GCTClusters"},
@@ -757,7 +760,7 @@ def addDecodedCalo(types=['Had', 'Em'], regs=['HGCal','Barrel','HGCalNoTK']):
                                 hwEta = LazyVar("hwEta", int, doc="hwEta"),
                                 hwPhi = LazyVar("hwPhi", int, doc="hwPhi"),
                             )
-                        )            
+                        )
 
             decCaloTableExt = cms.EDProducer("L1PFDecodedCaloTableProducer",
                                              src = cms.InputTag("l1tLayer1"+reg, f'Decoded{tp}Clusters'),
@@ -768,7 +771,7 @@ def addDecodedCalo(types=['Had', 'Em'], regs=['HGCal','Barrel','HGCalNoTK']):
             setattr(process, f"dec{tp}Calo{reg}ExtTable", decCaloTableExt)
             decCaloTableExt.name = decCaloTable.name
             process.extraPFStuff.add(decCaloTable, decCaloTableExt)
-  
+
 
 def addAllLeps():
     addGenLep()
@@ -780,7 +783,7 @@ def addAllLeps():
 def goGun(calib=1):
     process.ntuple.isParticleGun = True
     respOnly()
-    if calib: 
+    if calib:
         addCalib()
 def goMT(nthreads=2):
     process.options.numberOfThreads = cms.untracked.uint32(nthreads)
@@ -823,7 +826,7 @@ def addEDMOutput():
 
 if False:
     #process.source.fileNames  = [ '/store/cmst3/group/l1tr/gpetrucc/11_1_0/NewInputs110X/110121.done/TTbar_PU200/inputs110X_%d.root' % i for i in (1,)] #3,7,8,9) ]
-    process.source.fileNames  = [ '/store/cmst3/group/l1tr/gpetrucc/12_3_X/NewInputs110X/220322/TTbar_PU200/inputs110X_%d.root' % i for i in (1,)] 
+    process.source.fileNames  = [ '/store/cmst3/group/l1tr/gpetrucc/12_3_X/NewInputs110X/220322/TTbar_PU200/inputs110X_%d.root' % i for i in (1,)]
     #process.source.fileNames  = [ '/store/cmst3/group/l1tr/gpetrucc/11_1_0/NewInputs110X/110121.done/DYToLL_PU200/inputs110X_%d.root' % i for i in (1,)] #3,7,8,9) ]
     #goMT(4)
     #oldInputs_11_1_6()
@@ -868,6 +871,7 @@ def saveGenCands():
                                            ),
                                       )
     process.p += process.gencandTable
-    
-    
+
+
 addAllJets()
+addGenJetFlavourTable()

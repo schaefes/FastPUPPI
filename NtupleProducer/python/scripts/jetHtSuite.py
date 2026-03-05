@@ -12,20 +12,20 @@ from FastPUPPI.NtupleProducer.plotTemplate import plotTemplate
 ROOT.gROOT.ProcessLine('#include "%s/src/FastPUPPI/NtupleProducer/python/scripts/jetHtSuite.h"' % os.environ['CMSSW_BASE']);
 
 def makeCalcCpp(what):
-    if what == "ht": 
+    if what == "ht":
         return ROOT.CalcHT()
-    if what == "mht": 
+    if what == "mht":
         return ROOT.CalcMHT()
-    if what == "mjj": 
+    if what == "mjj":
         return ROOT.CalcMJJ()
-    if re.match(r"jet\d+$", what): 
+    if re.match(r"jet\d+$", what):
         return ROOT.CalcJ(int(what.replace("jet","")))
-    if what.startswith("ptj-mjj"): 
+    if what.startswith("ptj-mjj"):
         return ROOT.CalcJ2_MJJcut(float(what.replace("ptj-mjj","")))
     raise RuntimeError("CalcCpp: can't parse "+what)
 
 def makeLepCalcCpp(what):
-    if re.match(r"lep\d*_(pt|iso|id|eta|abseta)", what): 
+    if re.match(r"lep\d*_(pt|iso|id|eta|abseta)", what):
         (a,b) = what.split("_")
         if a == "lep": a = "lep0"
         return ROOT.CalcL(int(a[3:]), {"pt":0,"iso":1,"id":2,"eta":3,"abseta":4}[b])
@@ -59,10 +59,10 @@ def makeCorrArray(tree, what, obj, ptCorrCut, etaCut, corr, _cache={}):
 
 def makeMETArray(tree, what, obj, etaCut):
     if obj == "Gen": obj = "gen" # fix issue with naming convention
-    if   etaCut <= 1.5: post = "MetBarrel" 
+    if   etaCut <= 1.5: post = "MetBarrel"
     elif etaCut <= 2.4: post = "MetCentral"
     else:               post = "Met"
-    if not tree.GetBranch(obj+post+"_pt"): 
+    if not tree.GetBranch(obj+post+"_pt"):
         if obj == "gen": raise RuntimeError("Missing gen"+post);
         return None
     progress = _progress("  Reading "+obj+post+" in C++...")
@@ -102,7 +102,7 @@ def makeRecoLepArray(tree, what, obj, ptCut, etaCut, lepid=("",-1.,True), lepiso
     progress.done("done, %d entries" % len(ret))
     return ret
 
-def makeMatchedRecoLepArray(tree, what, 
+def makeMatchedRecoLepArray(tree, what,
                             obj, ptCut, etaCut, lepid, lepiso,
                             genObj, genPtCut, genEtaCut, genPrompt, genDr, _cache={}):
     (obj,ptCut,lepid,lepiso) = parseLepRequirement(obj,ptCut,lepid,lepiso)
@@ -113,7 +113,7 @@ def makeMatchedRecoLepArray(tree, what,
         return None
     cppcalc = makeLepCalcCpp(what)
     progress = _progress("  Reading "+obj+" in C++...")
-    ret = ROOT.makeMatchedLepArray(tree, cppcalc, 
+    ret = ROOT.makeMatchedLepArray(tree, cppcalc,
                             obj, ptCut, etaCut[0], etaCut[1], lepid[0], lepid[1], lepid[2], lepiso[0], lepiso[1], lepiso[2],
                             genObj, genPtCut, genEtaCut[0], genEtaCut[1], 2 if genPrompt else 0, genDr);
     _cache[_key] = ret
@@ -211,23 +211,23 @@ whats = WHATS + [
         ("ak4",         "L1Puppi$",        ROOT.kViolet+1, 21, 1.5),
         ("sc4 Sim",     "scPuppiSim$",     ROOT.kGreen+2, 34, 1.2),
         ("sc4 SimCorr", "scPuppi$",        ROOT.kRed+0, 20, 1.1),
-        ("sc4",         "scPuppiCorr$",    ROOT.kRed+2, 20, 0.9), 
+        ("sc4",         "scPuppiCorr$",    ROOT.kRed+2, 20, 0.9),
     ]),
     ('l1pfpu_p1jets',[
         ("ak4",      "L1Puppi$",        ROOT.kViolet+1, 21, 1.5),
         ("9x9",      "phase19x9PuppiCorrJets$", ROOT.kGreen+2, 34, 1.2),
-        ("9x9trim",  "phase19x9trimmedPuppiCorrJets$",    ROOT.kRed+2, 20, 0.9), 
+        ("9x9trim",  "phase19x9trimmedPuppiCorrJets$",    ROOT.kRed+2, 20, 0.9),
     ]),
     ('l1pfpu_puppiJets',[
         ("ak4", "L1Puppi$",             ROOT.kViolet+1, 21, 1.5),
         ("9x9", "phase19x9PuppiCorr$", ROOT.kGreen+1, 34, 1.2),
-        ("9x9trim",  "phase19x9trimmedPuppiCorr$",    ROOT.kGreen+3, 34, 1.1), 
-        ("sc4", "scPuppiCorr$",    ROOT.kRed+2, 20, 0.9), 
+        ("9x9trim",  "phase19x9trimmedPuppiCorr$",    ROOT.kGreen+3, 34, 1.1),
+        ("sc4", "scPuppiCorr$",    ROOT.kRed+2, 20, 0.9),
     ]),
     ('l1pfpu_jetrefonly',[
         ("Calo",    "RefCaloJets$",         ROOT.kViolet+1, 21, 1.5),
         ("TK",      "RefTwoLayerJets$",     ROOT.kGreen+2, 34, 1.2),
-        ("Puppi",   "RefPhase1PuppiJets$",  ROOT.kRed+1, 20, 0.9), 
+        ("Puppi",   "RefPhase1PuppiJets$",  ROOT.kRed+1, 20, 0.9),
     ]),
     ('l1pfpu_bitwise',[
         ("CMSSW",       "L1CMSSWPuppi$",      ROOT.kGray+2, 20, 2.0),
@@ -292,16 +292,20 @@ whats = WHATS + [
         ("scEmu",     "scEmuPuppi$",   ROOT.kViolet+1, 20, 1.4),
         ("scDereg",   "scDeregPuppi$", ROOT.kAzure+1, 20, 1.1),
     ]),
+    ('l1pfpu_ngjets',[
+        ("SCExt",     "scPuppiExtended",       ROOT.kBlue+1, 21, 1.5),
+        ("NG",    "scPuppiL1TSC4NGJet",   ROOT.kRed+1, 20, 1.1),
+    ]),
 ]
 
 from optparse import OptionParser
 parser = OptionParser("%(prog) infile [ src [ dst ] ]")
 parser.add_option("-w", dest="what", default=None, help="Choose set (il1pf, l1pf, ...)")
 parser.add_option("-W", dest="what_reg",     default=None, help="Choose set (inputs, l1pf, ...)")
-parser.add_option("-P","--plots", dest="plots", default="rate,isorate,roc,effc,plateff,platroc", help="Choose plot or comma-separated list of plots") 
+parser.add_option("-P","--plots", dest="plots", default="rate,isorate,roc,effc,plateff,platroc", help="Choose plot or comma-separated list of plots")
 parser.add_option("-j","--jecs", dest="jecs", default="jecs.root", help="Choose JEC file")
 parser.add_option("--jm","--jec-method", dest="jecMethod", default="", help="Choose JEC method")
-parser.add_option("-R","--raw", dest="rawJets", default=False, action="store_true", help="Don't appy JECs")
+parser.add_option("-R","--raw", dest="rawJets", default=False, action="store_true", help="Don't apply JECs")
 parser.add_option("-s", dest="genht",  default=None, type="float", help="Choose gen ht")
 parser.add_option("-E", dest="eff",  default=None, type="string", help="Choose plateau efficiency")
 parser.add_option("-r", dest="rate",  default="10,20,50", type="string", help="Choose rate [kHz] (for isorate plots, can specify more than one)")
@@ -324,7 +328,7 @@ options, args = parser.parse_args()
 
 tfiles = [ROOT.TFile.Open(f) for f in args[:2]]
 
-odir = args[2] 
+odir = args[2]
 plotter = plotTemplate(odir, defaultExts = (["png","eps","pdf"] if options.printQualityPlots else ["png"]))
 
 ROOT.gSystem.Load("libL1TriggerPhase2L1ParticleFlow")
@@ -382,14 +386,14 @@ elif options.var.startswith("met"):
     if options.xmax     is None: options.xmax     = 500
     if options.eff      is None: options.eff      = "0.5,0.9,0.95"
     what = "met"
-    options.eta = 5.0 
-    if "Central" in options.var:  options.eta = 2.4 
+    options.eta = 5.0
+    if "Central" in options.var:  options.eta = 2.4
     elif "Barrel" in options.var: options.eta = 1.5
     qualif = "|#eta| < %.1f" % options.eta
 elif options.var.startswith("lep"):
     isJetMet = False
     what = options.var
-    if options.xvar is None: 
+    if options.xvar is None:
         options.xvar = options.var
     if options.xvar.endswith("pt"):
         if options.varlabel is None: options.varlabel = "p_{T}"
@@ -426,7 +430,7 @@ jecfile = ROOT.TFile.Open(options.jecs) if isJetMet else None
 
 def makePlatEffPlot(signal, background, what, obj, ptcut, jecs, plotparam, _cache={}):
     _key = (id(signal),id(background),what,obj,str(ptcut),str(plotparam))
-    if _key in _cache: 
+    if _key in _cache:
         #print "  retrieved plateff for %s, %s, %s from cache" % (what, obj, plotparam)
         return _cache[_key]
     # ok there we go
@@ -452,28 +456,28 @@ def makePlatEffPlot(signal, background, what, obj, ptcut, jecs, plotparam, _cach
       eff, plot, cut = effForRate(rate)
       if not eff: break
       if eff < plotparam:
-          if rate >= 30e3: 
+          if rate >= 30e3:
               eff = None; break
           rate = min(rate*5, 30e3)
       else:
           break
     if not eff: return (None, None)
-    #print "Upper bound: eff %g at rate %g" % (eff, rate) 
+    #print "Upper bound: eff %g at rate %g" % (eff, rate)
     maxrate = rate; rate = rate / 5;
     while True:
       eff, plot, cut = effForRate(rate)
       if not eff: break
       if eff > plotparam:
-          rate /= 2; 
+          rate /= 2;
       else:
           break
-    if not eff: return (None, None)                 
-    #print "Lower bound: eff %g at rate %g" % (eff, rate) 
+    if not eff: return (None, None)
+    #print "Lower bound: eff %g at rate %g" % (eff, rate)
     minrate = rate
     while True:
       rate = sqrt(maxrate * minrate)
       eff, plot, cut = effForRate(rate)
-      if not eff: 
+      if not eff:
           #print "Bisection failed?"
           break
       if eff < plotparam:
@@ -482,7 +486,7 @@ def makePlatEffPlot(signal, background, what, obj, ptcut, jecs, plotparam, _cach
       else:
           #print "New upper bound: eff %g at rate %g" % (eff, rate)
           maxrate = rate
-      if maxrate/minrate < 1.1: 
+      if maxrate/minrate < 1.1:
           break
     #platprogress.done()
     if not eff: return (None, None)
@@ -495,7 +499,7 @@ def makePlatEffPlot(signal, background, what, obj, ptcut, jecs, plotparam, _cach
 
 def makePlatRocPlot(signal, background, what, obj, ptcut, jecs, plotparam, _cache={}):
     _key = (id(signal),id(background),what,obj,str(ptcut),str(plotparam))
-    if _key in _cache: 
+    if _key in _cache:
         #print "  retrieved platroc for %s, %s, %s from cache" % (what, obj, plotparam)
         return _cache[_key]
     # ok there we go
@@ -506,10 +510,10 @@ def makePlatRocPlot(signal, background, what, obj, ptcut, jecs, plotparam, _cach
         recoArrayS = makeCorrArray(signal, what, obj, ptcut, options.eta, jecs)
         if not recoArrayS: return (None,None)
     else:
-        recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_) 
+        recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_)
         if not recoArrayB: return (None,None)
         #print "Lepeff %s %s > %s ptCut %s gen %s ptCut %s" % (obj, what, plotparam, ptcut, genObjName, options.genleppt)
-        recoArrayS = makeMatchedRecoLepArray(signal, what, 
+        recoArrayS = makeMatchedRecoLepArray(signal, what,
                       obj, ptcut, options.etas, options.lepid_, options.lepiso_,
                       genObjName, options.genleppt, options.etas, options.genprompt, options.gendr)
         if not recoArrayS: return (None,None)
@@ -529,7 +533,7 @@ def makePlatRocPlot(signal, background, what, obj, ptcut, jecs, plotparam, _cach
           if plot.GetEfficiency(i) > plotparam:
               graph = plot.CreateGraph()
               xmin, xmax = xaxis.GetBinLowEdge(i-1), xaxis.GetBinCenter(i)
-              if graph.Eval(xmin,ROOT.nullptr,"S") > plotparam: 
+              if graph.Eval(xmin,ROOT.nullptr,"S") > plotparam:
                   #print "ERROR xmin for %s @ %g (%g): i = %d" % (what+obj, rate, cut, i)
                   pass
               elif graph.Eval(xmax,ROOT.nullptr,"S") < plotparam:
@@ -551,7 +555,7 @@ def makePlatRocPlot(signal, background, what, obj, ptcut, jecs, plotparam, _cach
     rate = 1
     while rate <= 30e3:
       plat = platForRate(rate)
-      if plat: 
+      if plat:
           if len(points) == 0 or points[-1][0] != plat:
               points.append((plat,rate))
       rate *= 1.2
@@ -575,7 +579,7 @@ for plotkind in options.plots.split(","):
         for objset,things in whats:
           if options.what and (objset not in options.what.split(",")): continue
           if options.what_reg:
-              if not any(re.match(p+"$",objset) for p in options.what_reg.split(",")): 
+              if not any(re.match(p+"$",objset) for p in options.what_reg.split(",")):
                   continue
           for name,obj,col,msty,msiz in things:
             obj = obj.rstrip("$")
@@ -594,7 +598,7 @@ for plotkind in options.plots.split(","):
       for objset,things in whats:
           if options.what and (objset not in options.what.split(",")): continue
           if options.what_reg:
-              if not any(re.match(p+"$",objset) for p in options.what_reg.split(",")): 
+              if not any(re.match(p+"$",objset) for p in options.what_reg.split(",")):
                   continue
           plots = []
           for name,obj,col,msty,msiz in things:
@@ -605,7 +609,7 @@ for plotkind in options.plots.split(","):
               else:
                   jecdirname = obj+"Jets"+( "_"+options.jecMethod if options.jecMethod else "")
                   jecdir = jecfile.GetDirectory(jecdirname)
-                  if not jecdir: 
+                  if not jecdir:
                       print("Missing JECs "+jecdirname+" in "+options.jecs)
                       continue
                   jecs = ROOT.l1tpf.corrector(jecdir)
@@ -616,7 +620,7 @@ for plotkind in options.plots.split(","):
                   if isJetMet:
                       recoArrayB = makeCorrArray(background, what, obj, ptcut, options.eta, jecs)
                   else:
-                      recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_) 
+                      recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_)
                   if not recoArrayB: continue
                   plot = makeCumulativeHTEff(name, recoArrayB, options.xmax)
               elif plotkind == "effc":
@@ -629,7 +633,7 @@ for plotkind in options.plots.split(","):
               elif plotkind == "lepeff":
                   if isJetMet: raise RuntimeError()
                   #print "Lepeff vs %s for %s %s > %s ptCut %s gen %s ptCut %s eta %s" % (options.xvar, obj, what, plotparam, ptcut, genObjName, options.genleppt, options.eta)
-                  recoArrayS = makeMatchedRecoLepArray(signal, what, 
+                  recoArrayS = makeMatchedRecoLepArray(signal, what,
                                 obj, ptcut, options.etas, options.lepid_, options.lepiso_,
                                 genObjName, options.genleppt, options.etas, options.genprompt, options.gendr)
                   plot = makeEffHist(name, genArray, recoArrayS, plotparam, options.xmax, logxbins=options.logxbins)
@@ -641,10 +645,10 @@ for plotkind in options.plots.split(","):
                       recoArrayS = makeCorrArray(signal, what, obj, ptcut, options.eta, jecs)
                       if not recoArrayS: continue
                   else:
-                      recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_) 
+                      recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_)
                       if not recoArrayB: continue
                       #print "Lepeff %s %s > %s ptCut %s gen %s ptCut %s" % (obj, what, plotparam, ptcut, genObjName, options.genleppt)
-                      recoArrayS = makeMatchedRecoLepArray(signal, what, 
+                      recoArrayS = makeMatchedRecoLepArray(signal, what,
                                     obj, ptcut, options.etas, options.lepid_, options.lepiso_,
                                     genObjName, options.genleppt, options.etas, options.genprompt, options.gendr)
                       if not recoArrayS: continue
@@ -664,10 +668,10 @@ for plotkind in options.plots.split(","):
                       recoArrayS = makeCorrArray(signal,     what, obj, ptcut, options.eta, jecs)
                       if not recoArrayS: continue
                   else:
-                      recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_) 
+                      recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_)
                       if not recoArrayB: continue
                       #print "Lepeff %s %s > %s ptCut %s gen %s ptCut %s" % (obj, what, plotparam, ptcut, genObjName, options.genleppt)
-                      recoArrayS = makeMatchedRecoLepArray(signal, what, 
+                      recoArrayS = makeMatchedRecoLepArray(signal, what,
                                     obj, ptcut, options.etas, options.lepid_, options.lepiso_,
                                     genObjName, options.genleppt, options.etas, options.genprompt, options.gendr)
                       if not recoArrayS: continue
@@ -684,7 +688,7 @@ for plotkind in options.plots.split(","):
                   if isJetMet:
                       recoArrayS = makeCorrArray(signal, what, obj, ptcut, options.eta, jecs)
                   else:
-                      recoArrayS = makeMatchedRecoLepArray(signal, what, 
+                      recoArrayS = makeMatchedRecoLepArray(signal, what,
                                 obj, ptcut, options.etas, options.lepid_, options.lepiso_,
                                 genObjName, options.genleppt, options.etas, options.genprompt, options.gendr)
 
@@ -695,7 +699,7 @@ for plotkind in options.plots.split(","):
                   if isJetMet:
                     recoArrayB = makeCorrArray(background, what, obj, ptcut, options.eta, jecs)
                   else:
-                    recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_) 
+                    recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_)
                   if not recoArrayB: continue
                   makeInclusiveEffRate(name, recoArrayB, plotparam)
                   continue
@@ -704,7 +708,7 @@ for plotkind in options.plots.split(","):
               plot.SetLineWidth(3); plot.SetLineColor(col);  plot.SetMarkerColor(col)
               plot.SetMarkerStyle(msty); plot.SetMarkerSize(msiz)
               plots.append((label,plot))
-          if not plots: 
+          if not plots:
               print("   nothing to plot!")
               continue
           plotter.SetLogy(False)
@@ -719,7 +723,7 @@ for plotkind in options.plots.split(","):
               leg = ROOT.TLegend(0.56,0.93,0.93,0.93-0.055*len(things))
               plotname = '%s%s-%s_eta%s_pt%d' % (options.var, plotkind, objset, options.eta, options.pt)
           elif plotkind == "effc":
-              gentext, genpost = "iciency", "" 
+              gentext, genpost = "iciency", ""
               if options.genht > 0:
                   gentext = " (Gen %s > %s)" % (options.varlabel, options.genht)
                   genpost = "_gen%.0f" % (options.genht)
@@ -741,7 +745,7 @@ for plotkind in options.plots.split(","):
               plotname = '%s%s-%s_eta%s_pt%d_eff%.2fat%g' % (options.var, plotkind, objset, options.eta, options.pt, plotparam, options.genht)
           elif plotkind == "roc":
               plotter.SetLogy(True)
-              gentext, genpost = "iciency", "" 
+              gentext, genpost = "iciency", ""
               if options.genht > 0:
                   gentext = " (Gen %s > %s)" % (options.varlabel, options.genht)
                   genpost = "_gen%.0f" % (options.genht)
@@ -762,7 +766,7 @@ for plotkind in options.plots.split(","):
               leg = ROOT.TLegend(0.6,0.93,0.93,0.93-0.055*len(things))
               plotname = '%s%s-%s_eta%s_pt%d_eff%.3f' % (options.var, plotkind, objset, options.eta, options.pt, plotparam)
           elif plotkind == "lepeff":
-              gentext, genpost = "iciency", "" 
+              gentext, genpost = "iciency", ""
               if options.genprompt != 2: genpost = "_id%d" % options.genprompt
               xmin = options.etamin*0.8 if "eta" in options.xvar else 0
               frame = ROOT.TH1D("",";Gen %s; Eff%s" % (options.varlabel, gentext), 100, xmin, options.xmax)
@@ -779,11 +783,11 @@ for plotkind in options.plots.split(","):
               line.SetLineStyle(7)
               for y in 40e3, 100, 10:
                   line.DrawLine(frame.GetXaxis().GetXmin(),y,frame.GetXaxis().GetXmax(),y)
-          for n,p in plots: 
-              if ("TH1" not in p.ClassName()): 
+          for n,p in plots:
+              if ("TH1" not in p.ClassName()):
                   plotstyle = plotstyle.lstrip("R").replace("X","")
               p.Draw(plotstyle+" SAME")
-          for n,p in plots: 
+          for n,p in plots:
               leg.AddEntry(p, n, "L" if plotkind in ("rate","roc") else "LP")
           leg.Draw()
           plotter.decorations()
@@ -791,7 +795,7 @@ for plotkind in options.plots.split(","):
           plotter.Print('%s%s' % (plotname, ("_"+options.label) if options.label else ""))
           fout = ROOT.TFile.Open('%s/%s%s.root' % (odir, plotname, ("_"+options.label) if options.label else ""), "RECREATE")
           fout.WriteTObject(frame,"frame")
-          for n,p in plots: 
+          for n,p in plots:
               p.SetTitle(n)
               fout.WriteTObject(p)
           fout.Close()
