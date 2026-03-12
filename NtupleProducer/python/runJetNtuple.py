@@ -15,7 +15,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 inputMC = ['file:/eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_151X/v1/GluGluHHTo2B2Tau_PU200/inputs151X_1-1.root']
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(*inputMC),
-    inputCommands = cms.untracked.vstring("keep *", 
+    inputCommands = cms.untracked.vstring("keep *",
             "drop l1tPFClusters_*_*_*",
             "drop l1tPFTracks_*_*_*",
             "drop l1tPFCandidates_*_*_*",
@@ -155,7 +155,7 @@ def addBtagging(jetColl): #extended TRK
     process.l1tBJetProducerPuppiCorrectedEmulator.maxJets = cms.int32(500)
     process.l1tBJetProducerPuppiCorrectedEmulator.useRawPt = cms.bool(True)
     process.extraPFStuff.add(process.L1TBJetsTask)
-    #process.l1pfjetTable.jets.scPuppiBJet = cms.InputTag('l1tBJetProducerPuppiCorrectedEmulator')  
+    #process.l1pfjetTable.jets.scPuppiBJet = cms.InputTag('l1tBJetProducerPuppiCorrectedEmulator')
 
 def addGenJetFlavourTable():
     process.load("PhysicsTools.JetMCAlgos.AK4PFJetsMCFlavourInfos_cfi")
