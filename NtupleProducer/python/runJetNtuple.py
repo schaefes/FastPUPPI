@@ -12,7 +12,7 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False),
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 # inputMC = ['file:/eos/cms/store/group/phys_exotica/L1P2AD/CRAB_PrivateMC/SVJ_mMed_500_SLIMMED_TPs/251117_081934/0000/inputs140X_1.root']
-inputMC = ['file:/eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_151X/v1/GluGluHHTo2B2Tau_PU200/inputs151X_1-1.root']
+inputMC = ['file:inputs151X.root']
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(*inputMC),
     inputCommands = cms.untracked.vstring("keep *",
@@ -139,8 +139,10 @@ def addMultitagging(trktype = "extended"):
         process.l1tSC4NGJetProducer.jets = cms.InputTag("l1tSC4PFL1PuppiExtendedEmulator")
     else:
         process.l1tSC4NGJetProducer.jets = cms.InputTag("l1tSC4PFL1PuppiEmulator")
+    for i in range(10):
+        setattr(process.l1pfjetTaggerTable.moreVariables, "tagScore_%s" % (classes[i]), cms.string("getTagScores()[%s]"  % (i)))
     process.l1tSC4NGJetProducer.maxJets = cms.int32(500)
-    #process.l1tSC4NGJetProducer.l1tSC4NGJetModelPath = cms.string(os.environ['CMSSW_BASE']+"/src/L1TSC4NGJetModel/L1TSC4NGJetModel_v0")
+    process.l1tSC4NGJetProducer.l1tSC4NGJetModelPath = cms.string(os.environ['CMSSW_BASE']+"/src/L1TSC4NGJetModel/L1TSC4NGJetModel_PtPU1")
     process.extraPFStuff.add(process.l1tSC4NGJetProducer)
     process.l1tSC4NGJetProducer.doJEC = cms.bool(True)
     process.l1tSC4NGJetProducer.correctorFile = cms.string("L1Trigger/Phase2L1ParticleFlow/data/jecs/jecs_20220308.root")

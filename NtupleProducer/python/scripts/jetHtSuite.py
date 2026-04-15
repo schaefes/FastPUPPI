@@ -606,17 +606,17 @@ for plotkind in options.plots.split(","):
               if (name == "Gen") or ("GenAcc" in obj): continue
               if options.var.startswith("met") or obj.startswith("Ref") or ("Corr" in obj) or not isJetMet:
                   jecs = ROOT.nullptr
-              if (obj == "scPuppiExtended"):
+              elif name == "NG":
+                  jecs = ROOT.nullptr
+                  print("not applying JECs for", obj)
+              else:
                   jecdirname = obj+"Jets"+( "_"+options.jecMethod if options.jecMethod else "")
                   jecdir = jecfile.GetDirectory(jecdirname)
                   if not jecdir:
                       print("Missing JECs "+jecdirname+" in "+options.jecs)
                       continue
                   jecs = ROOT.l1tpf.corrector(jecdir)
-                  print("Using JECs from scPuppiExt")
-              if (obj == "scPuppiL1TSC4NGJet"):
-                  jecs = ROOT.nullptr
-                  print("Not applying JECs for scPuppiL1TSC4NGJet")
+                  print("Applying JECs from for", obj)
               label = name
               ptcut = options.pt
               if "RefTwoLayerJets" in obj: ptcut = 5
@@ -648,6 +648,10 @@ for plotkind in options.plots.split(","):
                       if not recoArrayB: continue
                       recoArrayS = makeCorrArray(signal, what, obj, ptcut, options.eta, jecs)
                       if not recoArrayS: continue
+                      jecs = ROOT.nullptr
+                      recoTest = makeCorrArray(signal, what, obj, ptcut, options.eta, jecs)
+                      print('W Jecs:', recoArrayS[:10])
+                      print('W/o Jecs:', recoTest[:10])
                   else:
                       recoArrayB = makeRecoLepArray(background, what, obj, ptcut, options.etas, lepid=options.lepid_, lepiso=options.lepiso_)
                       if not recoArrayB: continue

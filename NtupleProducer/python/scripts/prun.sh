@@ -6,7 +6,7 @@ if [[ "$CODE" == "" || "$CODE" == "--help" || "$CODE" == "-h" || "$CODE" == "-?"
     exit 0;
 fi
 
-N=12
+N=15
 if [[ "$1" == "-j" ]]; then N=$2; shift; shift; fi;
 
 OPTS=""
@@ -17,10 +17,12 @@ OPTS=""
 # /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/QCD_Pt-15To3000_TuneCP5_Flat_14TeV-pythia8/QCD_Pt15To3000_PU200_151Xv0/250919_143646/0000
 # /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_151Xv0/250910_165631/0000
 # /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/VBFHToBB_M-125_TuneCP5_14TeV-powheg-pythia8/VBFHToBB_PU200_151Xv0/250915_092117/0000
+# /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/VBFHToCC_M-125_TuneCP5_14TeV-powheg-pythia8/VBFHToCC_PU200_151Xv0/250915_092131/0000/
+# /eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/GluGluHToGG_M-125_TuneCP5_14TeV-powheg-pythia8/GluGluHToGG_PU200_151Xv0/250915_092019/0000
 
 if [[ "$1" == "--151X_v1" ]]; then
     shift;
-    MAIN=/eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_140X/v1/VBFHToBB_M-125_TuneCP5_14TeV-powheg-pythia8/VBFHToBB_PU200_151Xv0/250915_092117/0000
+    MAIN=/eos/cms/store/cmst3/group/l1tr/FastPUPPI/15_1_X/fpinputs_151X/v1/$1
     PREFIX="inputs151X_"
 elif [[ "$1" == "--131X_v9a" ]]; then
     shift;
