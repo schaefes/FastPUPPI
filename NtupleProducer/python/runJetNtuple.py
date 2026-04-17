@@ -139,8 +139,6 @@ def addMultitagging(trktype = "extended"):
         process.l1tSC4NGJetProducer.jets = cms.InputTag("l1tSC4PFL1PuppiExtendedEmulator")
     else:
         process.l1tSC4NGJetProducer.jets = cms.InputTag("l1tSC4PFL1PuppiEmulator")
-    for i in range(10):
-        setattr(process.l1pfjetTaggerTable.moreVariables, "tagScore_%s" % (classes[i]), cms.string("getTagScores()[%s]"  % (i)))
     process.l1tSC4NGJetProducer.maxJets = cms.int32(500)
     process.l1tSC4NGJetProducer.l1tSC4NGJetModelPath = cms.string(os.environ['CMSSW_BASE']+"/src/L1TSC4NGJetModel/L1TSC4NGJetModel_PtPU1")
     process.extraPFStuff.add(process.l1tSC4NGJetProducer)
