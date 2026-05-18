@@ -334,7 +334,10 @@ def addNNPuppiTaus():
 
 def addMultitagging(): #extended TRK
     classes = process.l1tSC4NGJetProducer.classes
-    process.l1tSC4NGJetProducer.l1tSC4NGJetModelPath = cms.string(os.environ['CMSSW_BASE']+"/src/L1TSC4NGJetModel/L1TSC4NGJetModel_PtPU1")
+    try:
+        process.l1tSC4NGJetProducer.l1tSC4NGJetModelPath = cms.string(os.environ['CMSSW_BASE']+"/src/L1TSC4NGJetModel/L1TSC4NGJetModel_PtPU1")
+    except:
+        process.l1tSC4NGJetProducer.l1tSC4NGJetModelPath = cms.string(os.environ['CMSSW_BASE']+"/src/L1TSC4NGJetModel/L1TSC4NGJetModel_PtPU1/L1TSC4NGJetModel_PtPU1")
     for i in range(8):
         setattr(process.l1pfjetTaggerTable.moreVariables, "tagScore_%s" % (classes[i]), cms.string("getTagScores()[%s]"  % (i)))
 
